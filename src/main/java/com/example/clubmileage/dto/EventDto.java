@@ -1,18 +1,24 @@
 package com.example.clubmileage.dto;
 
+import lombok.Getter;
+
+import java.util.List;
+import java.util.UUID;
+
+@Getter
 public class EventDto {
     private String type;
 
     private String action;
 
-    private String reviewId;
+    private UUID reviewId;
 
     private String content;
 
-    private String attachedPhotoIds;
+    private List<String> attachedPhotoIds;
 
-    private String userId;
+    private UUID userId;
 
-    private String placeId;
+    private UUID placeId;
 
 }
