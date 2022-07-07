@@ -9,6 +9,7 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(indexes = @Index(name = "i_reviewId", columnList = "ReviewID"))
 public class PointHistory {
 
     @Id
@@ -24,7 +25,7 @@ public class PointHistory {
     @Column(name = "actionDetail")
     private String actionDetail;
 
-    @Column(name = "reviewId")
+    @Column(name = "reviewId" ,columnDefinition = "BINARY(16)")
     private UUID reviewId;
 
     @Column(name = "pointVariation")

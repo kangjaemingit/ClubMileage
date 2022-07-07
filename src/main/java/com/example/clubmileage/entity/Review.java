@@ -1,6 +1,7 @@
 package com.example.clubmileage.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class Review {
 
     @Id
@@ -20,13 +22,13 @@ public class Review {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "userId")
+    @Column(name = "userId" ,columnDefinition = "BINARY(16)")
     private UUID userId;
 
-    @Column(name = "attachedPhotoIds")
+    @Column(name = "attachedPhotoIds" )
     private String attachedPhotoIds;
 
-    @Column(name = "placeId")
+    @Column(name = "placeId" ,columnDefinition = "BINARY(16)")
     private UUID placeId;
 
 
