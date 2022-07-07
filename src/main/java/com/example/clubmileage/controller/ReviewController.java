@@ -17,8 +17,9 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/events")
-    public ResponseEntity<Review> event(@RequestBody EventDto eventDto){
-        return ResponseEntity.status(HttpStatus.OK).body(reviewService.review(eventDto));
+    public ResponseEntity<String> event(@RequestBody EventDto eventDto){
+        ResponseEntity<String> res = reviewService.review(eventDto);
+        return res;
     }
 
 }

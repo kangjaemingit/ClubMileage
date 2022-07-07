@@ -9,6 +9,8 @@ import com.example.clubmileage.repository.PointHistoryRepository;
 import com.example.clubmileage.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,63 +20,33 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final PointHistoryRepository pointHistoryRepository;
-    private final PersonalPointRepository personalPointRepository;
+    private final MileageService mileageService;
 
-    public Review review(EventDto eventDto) {
+    public ResponseEntity<String> review(EventDto eventDto) {
         switch (eventDto.getAction()) {
             case "ADD":
                 log.info("새로운 리뷰 등록 : " + eventDto.getContent());
-                return reviewAdd(eventDto);
+                reviewAdd(eventDto);
+                return ResponseEntity.ok("Review Add Success");
             case "MOD":
                 log.info("리뷰 수정 : " + eventDto.getContent());
-                return reviewMod(eventDto);
+                reviewMod(eventDto);
+                return ResponseEntity.ok("Review Modify Success");
             case "DELETE":
                 log.info("리뷰 삭제 : " + eventDto.getContent());
                 reviewDelete(eventDto);
-                break;
+                return ResponseEntity.ok("Review Delete Success");
             default:
                 log.info("존재하지않는 액션입니다.");
-                return null;
+                return ResponseEntity.badRequest().body("Error : Unknown Action");
         }
-        return null;
     }
 
 
     @Transactional
     public Review reviewAdd (EventDto eventDto){
         Review review = new Review(eventDto.getReviewId(), eventDto.getContent(), eventDto.getUserId(), eventDto.getAttachedPhotoIds().toString(), eventDto.getPlaceId());
-        PersonalPoint personalPoint;
-        if(personalPointRepository.existsById(eventDto.getUserId())){
-            personalPoint = personalPointRepository.findById(eventDto.getUserId())
-                    .map(p -> new PersonalPoint(p.getUserId(), p.getPoint()))
-                    .orElse(null);
-        } else {
-            personalPoint = new PersonalPoint(eventDto.getUserId(), 0);
-        }
-
-        if(!reviewRepository.existsById(eventDto.getReviewId())){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "NewReview", eventDto.getReviewId(), 1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("특정 장소에 첫 리뷰 작성 보너스 포인트 적립");
-            personalPoint.pointVariation(1);
-        }
-
-        if(eventDto.getContent() != ""){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "Text", eventDto.getReviewId(), 1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("1자 이상 텍스트 작성 포인트 적립");
-            personalPoint.pointVariation(1);
-        }
-
-        if(eventDto.getAttachedPhotoIds().stream().toArray().length > 0){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "Photo", eventDto.getReviewId(), 1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("1장 이상 사진 첨부 포인트 적립");
-            personalPoint.pointVariation(1);
-        }
-
-        personalPointRepository.save(personalPoint);
+        mileageService.reviewAddMileage(eventDto);
         return reviewRepository.save(review);
     }
 
@@ -86,46 +58,8 @@ public class ReviewService {
             return null;
         }
 
-        PersonalPoint personalPoint;
-        try {
-            personalPoint = personalPointRepository.findById(eventDto.getUserId())
-                    .map(p -> new PersonalPoint(p.getUserId(), p.getPoint()))
-                    .orElse(null);
-        } catch(Exception e) {
-            log.info("개인 포인트 내역이 존재하지않습니다.");
-            return null;
-        }
-
-        if(review.getContent().equals("") && !eventDto.getContent().equals("")){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "Text", eventDto.getReviewId(), 1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("1자 이상 텍스트 작성 포인트 적립");
-            personalPoint.pointVariation(1);
-        }
-
-        if(!review.getContent().equals("") && eventDto.getContent().equals("")){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "TextRemove", eventDto.getReviewId(), -1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("1자 이상 텍스트 작성 포인트 차감");
-            personalPoint.pointVariation(-1);
-        }
-
-        if(review.getAttachedPhotoIds().equals("[]") && eventDto.getAttachedPhotoIds().stream().toArray().length > 0){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "Photo", eventDto.getReviewId(), 1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("1장 이상 사진 첨부 포인트 적립");
-            personalPoint.pointVariation(1);
-        }
-
-        if(!review.getAttachedPhotoIds().equals("[]") && eventDto.getAttachedPhotoIds().stream().toArray().length == 0){
-            PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "PhotoRemove", eventDto.getReviewId(), -1);
-            pointHistoryRepository.save(pointHistory);
-            log.info("1장 이상 사진 첨부 포인트 차감");
-            personalPoint.pointVariation(-1);
-        }
-
+        mileageService.reviewModMileage(eventDto, review);
         review.modify(eventDto.getContent(), eventDto.getAttachedPhotoIds().toString());
-        personalPointRepository.save(personalPoint);
         return reviewRepository.save(review);
     }
 
@@ -137,24 +71,7 @@ public class ReviewService {
             return;
         }
 
-        PersonalPoint personalPoint;
-        try {
-            personalPoint = personalPointRepository.findById(eventDto.getUserId())
-                    .map(p -> new PersonalPoint(p.getUserId(), p.getPoint()))
-                    .orElse(null);
-        } catch(Exception e) {
-            log.info("개인 포인트 내역이 존재하지않습니다.");
-            return;
-        }
-
-        Integer reviewPoint = pointHistoryRepository.findPointSumByReviewId(eventDto.getReviewId());
-        personalPoint.pointVariation(-reviewPoint);
-        personalPointRepository.save(personalPoint);
-        log.info("리뷰 삭제 포인트 차감 : " + -reviewPoint);
-
-        PointHistory pointHistory = new PointHistory(null, eventDto.getUserId(), eventDto.getAction(), "Delete Review", eventDto.getReviewId(), -reviewPoint);
-        pointHistoryRepository.save(pointHistory);
-
+        mileageService.reviewDeleteMileage(eventDto);
         reviewRepository.delete(review);
     }
 

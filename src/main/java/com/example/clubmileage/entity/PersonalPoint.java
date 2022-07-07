@@ -21,6 +21,7 @@ public class PersonalPoint {
     @Column(name = "point")
     private Integer point;
 
+
     public void pointVariation(Integer point){
         this.point = this.point + point;
     }

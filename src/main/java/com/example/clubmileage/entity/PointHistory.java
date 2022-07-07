@@ -2,14 +2,18 @@ package com.example.clubmileage.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(indexes = @Index(name = "i_reviewId", columnList = "ReviewID"))
+@EntityListeners(AuditingEntityListener.class)
 public class PointHistory {
 
     @Id
@@ -31,9 +35,13 @@ public class PointHistory {
     @Column(name = "pointVariation")
     private Integer pointVariation;
 
-    public void init(UUID userId, String action, UUID reviewId, Integer pointVariation){
+    @CreatedDate
+    private LocalDateTime createDate;
+
+    public PointHistory(UUID userId, String action, String actionDetail, UUID reviewId, Integer pointVariation) {
         this.userId = userId;
         this.action = action;
+        this.actionDetail = actionDetail;
         this.reviewId = reviewId;
         this.pointVariation = pointVariation;
     }
