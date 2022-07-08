@@ -32,8 +32,8 @@ public class Review {
     @Column(name = "userId" ,columnDefinition = "BINARY(16)")
     private UUID userId;
 
-    @Column(name = "attachedPhotoIds")
-    private String attachedPhotoIds;
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    private List<AttachedPhoto> attachedPhotoIds = new ArrayList<>();
 
     @Column(name = "placeId" ,columnDefinition = "BINARY(16)")
     private UUID placeId;
@@ -44,15 +44,18 @@ public class Review {
     @LastModifiedDate
     private LocalDateTime lastupdatedDate;
 
-    public Review(UUID reviewId, String content, UUID userId, String attachedPhotoIds, UUID placeId) {
+    public Review(UUID reviewId, String content, UUID userId, UUID placeId) {
         this.reviewId = reviewId;
         this.content = content;
         this.userId = userId;
-        this.attachedPhotoIds = attachedPhotoIds;
         this.placeId = placeId;
     }
 
-    public Review modify(String content, String attachedPhotoIds){
+    public void setAttachedPhotoIds(List<AttachedPhoto> attachedPhotoIds) {
+        this.attachedPhotoIds = attachedPhotoIds;
+    }
+
+    public Review modify(String content, List<AttachedPhoto> attachedPhotoIds){
         this.content = content;
         this.attachedPhotoIds = attachedPhotoIds;
 
