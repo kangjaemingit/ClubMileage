@@ -9,4 +9,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     @Override
     boolean existsById(UUID reviewId);
+
+    boolean existsByPlaceId(UUID placeId);
+
 }

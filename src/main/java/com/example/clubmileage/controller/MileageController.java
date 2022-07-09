@@ -16,6 +16,7 @@ public class MileageController {
 
     private final MileageService mileageService;
 
+    // 개인별 마일리지 조회 API
     @GetMapping("/mileage/{userId}")
     public ResponseEntity<Integer> mileage(@PathVariable UUID userId){
         return ResponseEntity.ok(mileageService.personalMileage(userId));

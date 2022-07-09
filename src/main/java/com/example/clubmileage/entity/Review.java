@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @Getter
 @Table(name = "review")
 @EntityListeners(AuditingEntityListener.class)
+@ToString
 public class Review {
 
     @Id
@@ -33,6 +35,7 @@ public class Review {
     private UUID userId;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<AttachedPhoto> attachedPhotoIds = new ArrayList<>();
 
     @Column(name = "placeId" ,columnDefinition = "BINARY(16)")

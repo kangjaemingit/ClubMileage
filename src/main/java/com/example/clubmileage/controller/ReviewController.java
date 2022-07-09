@@ -16,9 +16,10 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    // 이벤트 API
     @PostMapping("/events")
     public ResponseEntity<String> event(@RequestBody EventDto eventDto){
-        ResponseEntity<String> res = reviewService.review(eventDto);
+        ResponseEntity<String> res = reviewService.event(eventDto);
         return res;
     }
 

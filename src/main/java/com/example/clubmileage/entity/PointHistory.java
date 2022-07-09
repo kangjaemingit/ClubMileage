@@ -33,7 +33,7 @@ public class PointHistory {
     private UUID reviewId;
 
     @Column(name = "pointVariation")
-    private Integer pointVariation;
+    private Integer pointVariation; // 포인트 변화
 
     @CreatedDate
     private LocalDateTime createDate;

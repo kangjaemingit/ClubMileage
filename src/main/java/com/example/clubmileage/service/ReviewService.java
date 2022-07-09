@@ -2,16 +2,11 @@ package com.example.clubmileage.service;
 
 import com.example.clubmileage.dto.EventDto;
 import com.example.clubmileage.entity.AttachedPhoto;
-import com.example.clubmileage.entity.PersonalPoint;
-import com.example.clubmileage.entity.PointHistory;
 import com.example.clubmileage.entity.Review;
 import com.example.clubmileage.repository.AttachedPhotoRepository;
-import com.example.clubmileage.repository.PersonalPointRepository;
-import com.example.clubmileage.repository.PointHistoryRepository;
 import com.example.clubmileage.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +23,7 @@ public class ReviewService {
     private final AttachedPhotoRepository attachedPhotoRepository;
     private final MileageService mileageService;
 
-    public ResponseEntity<String> review(EventDto eventDto) {
+    public ResponseEntity<String> event(EventDto eventDto) {
         switch (eventDto.getAction()) {
             case "ADD":
                 log.info("새로운 리뷰 등록 : " + eventDto.getContent());
@@ -48,39 +43,51 @@ public class ReviewService {
         }
     }
 
-
+    // 리뷰 등록
     @Transactional
     public void reviewAdd (EventDto eventDto){
+        if(reviewRepository.existsById(eventDto.getReviewId())){
+            throw new IllegalArgumentException("리뷰 등록 실패 : 이미 존재하는 리뷰 입니다.");
+        }
         Review review = new Review(eventDto.getReviewId(), eventDto.getContent(), eventDto.getUserId(), eventDto.getPlaceId());
 
         List<AttachedPhoto> attachedPhotos = new ArrayList<>();
-        eventDto.getAttachedPhotoIds().forEach(p -> attachedPhotos.add(new AttachedPhoto(p, review)));
+        eventDto.getAttachedPhotoIds().forEach(p -> attachedPhotos.add(new AttachedPhoto(p, review))); // 받아온 데이터 AttachedPhoto 형식으로 변환
         review.setAttachedPhotoIds(attachedPhotos);
 
-        mileageService.reviewAddMileage(eventDto);
+        mileageService.reviewAddMileage(eventDto); // 리뷰 등록 마일리지 적립
         reviewRepository.save(review);
     }
 
+    // 리뷰 수정
     @Transactional
     public void reviewMod (EventDto eventDto){
         Review review = reviewRepository.findById(eventDto.getReviewId()).orElseThrow(() -> new IllegalArgumentException("리뷰 수정 실패 : 존재하지 않는 리뷰입니다."));
+        List<AttachedPhoto> attachedPhotoList = attachedPhotoRepository.findByReview(review);
+        attachedPhotoRepository.deleteAll(attachedPhotoList);// 리뷰의 기존 사진 삭제 후 재등록
+
+        mileageService.reviewModMileage(eventDto, review, attachedPhotoList); // 리뷰 수정 마일리지 조정
 
         List<AttachedPhoto> attachedPhotos = new ArrayList<>();
-        eventDto.getAttachedPhotoIds().forEach(p -> attachedPhotos.add(new AttachedPhoto(p, review)));
-        mileageService.reviewModMileage(eventDto, review, attachedPhotos);
+        eventDto.getAttachedPhotoIds().forEach(p -> attachedPhotos.add(new AttachedPhoto(p, review))); // 받아온 데이터 AttachedPhoto 형식으로 변환
 
-
-        attachedPhotoRepository.deleteAll(attachedPhotoRepository.findByReview(review));
         review.modify(eventDto.getContent(), attachedPhotos);
         reviewRepository.save(review);
+
+        attachedPhotoRepository.saveAll(attachedPhotos);
     }
 
+    // 리뷰 삭제
     @Transactional
     public void reviewDelete (EventDto eventDto){
         Review review = reviewRepository.findById(eventDto.getReviewId()).orElseThrow(() -> new IllegalArgumentException("리뷰 삭제 실패 : 존재하지 않는 리뷰입니다."));
 
-        mileageService.reviewDeleteMileage(eventDto);
+        mileageService.reviewDeleteMileage(eventDto); // 리뷰 삭제 마일리지 차감
         reviewRepository.delete(review);
+    }
+
+    public List<Review> reviewIndex(){
+        return reviewRepository.findAll();
     }
 
 
