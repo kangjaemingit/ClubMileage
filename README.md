@@ -24,6 +24,7 @@
 ![image](https://user-images.githubusercontent.com/71342315/178139243-47f33a08-4fea-4e71-9a0c-14c3db0adb5a.png)
 
 ## DDL
+* [DDL_Structure.sql](https://github.com/kangjaemingit/ClubMileage/blob/master/DDL_Structure.sql)
 #### Table `attached_photo`
 ```
 CREATE TABLE `attached_photo` (
