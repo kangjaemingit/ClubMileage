@@ -1,4 +1,4 @@
-#ClubMileage
+# Triple 사전 과제 *ClubMileage*
 --------------------
 
 ## 실행환경
@@ -20,6 +20,10 @@
 ### Database : `ClubMileage`
 * Spring Data JPA를 사용하여 DDL을 직접 입력하지 않아도 DB connection 설정 시 자동으로 테이블이 생성됩니다.
 * 현재 AWS LightSail에 데이터베이스가 생성되어있습니다. 그대로 사용하셔도 무방합니다.
+* ERD Diagram
+
+![image](https://user-images.githubusercontent.com/71342315/178139243-47f33a08-4fea-4e71-9a0c-14c3db0adb5a.png)
+
 
 #### Table `attached_photo`
 ```
@@ -72,7 +76,7 @@ KEY `i_userId` (`user_id`)
 
 ---------------------------
 ## API
-* POST EVENTS API("/events")
+### * POST EVENTS API("/events")
   - 리뷰 추가, 수정, 삭제
 #### Request
 ```
@@ -90,8 +94,8 @@ KEY `i_userId` (`user_id`)
 ```
   "Review Add Success"
 ```
-
-* GET Index("/index")
+---
+### * GET Index("/index")
   - 리뷰 전체 조회
 #### Request
 ```
@@ -116,8 +120,8 @@ HTTP GET (http://localhost:8080/index)
         "lastupdatedDate": "2022-07-10T16:17:52.991171"
     }
 ```
-
-* GET Personal_Point API("/mileage/{userId}")
+---
+### * GET Personal_Point API("/mileage/{userId}")
   - 개인 포인트 조회
 #### Request
 ```
