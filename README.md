@@ -68,3 +68,8 @@ PRIMARY KEY (`user_id`),
 KEY `i_userId` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 ```
+
+---------------------------
+## 테스트케이스
+* 테스트 케이스는 Junit5 를 사용하여 작성하였습니다.
+* 모든 테이블가 비워진 상태에서 테스트가 가능합니다.
